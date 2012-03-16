@@ -48,6 +48,32 @@ public class UserKernel extends ThreadedKernel {
 			lock.release();
 		}
 	}
+	
+	public int readPhysMem(int ppn, int readOffset, int length, byte[] data, int writeOffset) {
+		int amount = 0;
+		try {
+			lock.acquire();
+			byte[] memory = Machine.processor().getMemory();
+			int start = ppn*pageSize + readOffset;
+			int end = (ppn+1)*pageSize;
+			amount = end - start;
+			if(memory.length-start < length){
+				length = memory.length-start;
+			}
+			if (length <= amount) {
+				System.arraycopy(memory, start, data, writeOffset, length);
+				return length;
+			} else {
+				System.arraycopy(memory, start, data, writeOffset, amount);
+			}
+			return amount;
+		} catch(Exception e) {
+			Lib.debug('c', "writePhyMem had an exception: "+e.getMessage());
+			return amount;
+		} finally {
+			lock.release();
+		}
+	}
 
 	public int readPhysMem(int[] ppnArray, int readOffset, int length, byte[] data, int writeOffset) {
 		int amount = 0;
