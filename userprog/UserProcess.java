@@ -171,20 +171,26 @@ public class UserProcess {
 			int readOffset = Processor.offsetFromAddress(vaddr);
 			
 			int newAddr = startVPN*pageSize;
-			int numPages = 0;
+			//int numPages = 0;
 			int currentPage = startVPN;
 			Lib.debug('c', "length: "+length);
 			Lib.debug('c', "pageSize: "+pageSize);
 			Lib.debug('c', "readOffset: "+readOffset);
 			while (newAddr < vaddr+length) {
-				numPages++;
+				//numPages++;
 				newAddr += pageSize;
 				pageTable[currentPage].used = true;
+				if(pageTable[currentPage].valid){
+					val += ((UserKernel) Kernel.kernel).readPhysMem(pageTable[currentPage].ppn, readOffset, length, data, offset);
+					length -= val;
+				}
 				currentPage++;
 			}
+			return val;
+		}
 			
 			// make an array of ppns in case the length of what we’re reading overflows to more than one page
-			int[] ppnArray = new int[numPages];
+		/*	int[] ppnArray = new int[numPages];
 			for (int i = 0; i < ppnArray.length; i++) {
 				ppnArray[i] = pageTable[startVPN+i].ppn;
 			}
@@ -195,7 +201,8 @@ public class UserProcess {
 			Lib.debug('c', "read this much from phys memory: "+val);
 			Lib.debug('c', "in buffer: " + new String(data));
 			return val;
-		} catch (Exception e) {
+		} */
+		catch (Exception e) {
 			Lib.debug('c', "exception in readVirtualMemory: " + e.getMessage());
 			return val;
 		}
@@ -254,7 +261,7 @@ public class UserProcess {
 				newAddr += pageSize;
 				pageTable[currentPage].used = true;
 				if(pageTable[currentPage].valid){
-					val += ((UserKernel) Kernel.kernel).readPhysMem(pageTable[currentPage].ppn, readOffset, length, data, offset);
+					val += ((UserKernel) Kernel.kernel).writePhysMem(pageTable[currentPage].ppn, writeOffset, length, data, offset);
 					length -= val;
 				}
 				currentPage++;
@@ -262,7 +269,7 @@ public class UserProcess {
 			return val;
 
 			// TODO: should we check if the page is read only before writing to it?
-			int[] ppnArray = new int[numPages];
+			/*int[] ppnArray = new int[numPages];
 			for (int i = 0; i < ppnArray.length; i++) {
 				ppnArray[i] = pageTable[startVPN+i].ppn;
 			}
@@ -271,7 +278,7 @@ public class UserProcess {
 			if (val < length) {
 				return -1;
 			}
-			return val;
+			return val;*/
 		} catch (Exception e) {
 			Lib.debug('c', "exception in writeVirtualMemory: "+e.getMessage());
 			return val;
