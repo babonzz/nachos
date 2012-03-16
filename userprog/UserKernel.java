@@ -56,7 +56,7 @@ public class UserKernel extends ThreadedKernel {
 			lock.acquire();
 			byte[] memory = Machine.processor().getMemory();
 			int start = ppn*pageSize + readOffset;
-			if (start > memory.length || start < 0) {
+			if (start >= memory.length || start < 0) {
 				return amount;
 			}
 			int end = (ppn+1)*pageSize;
@@ -132,8 +132,11 @@ public class UserKernel extends ThreadedKernel {
 			int start = ppn*pageSize + writeOffset;
 			int end = (ppn+1)*pageSize;
 			amount= end - start;
+			if (start >= memory.length || start < 0) {
+				return amount;
+			}
 			if (memory.length-start < length){
-				length = memory.length-start
+				length = memory.length-start;
 			}
 			if (length <= amount) {
 				System.arraycopy(data, readOffset, memory, start, length);
