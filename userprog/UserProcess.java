@@ -171,20 +171,40 @@ public class UserProcess {
 			int readOffset = Processor.offsetFromAddress(vaddr);
 			
 			int newAddr = startVPN*pageSize;
-			int numPages = 0;
+			//int numPages = 0;
 			int currentPage = startVPN;
+			int tempVal = 0;
+			int readLength = 0;
 			Lib.debug('c', "length: "+length);
 			Lib.debug('c', "pageSize: "+pageSize);
 			Lib.debug('c', "readOffset: "+readOffset);
 			while (newAddr < vaddr+length) {
-				numPages++;
+				//numPages++;
 				newAddr += pageSize;
 				pageTable[currentPage].used = true;
+				readLength = pageSize - readOffset;
+				if(readLength > length){
+					readLength = length;
+				}
+				if(pageTable[currentPage].valid){
+					tempVal = ((UserKernel) Kernel.kernel).readPhysMem(pageTable[currentPage].ppn, readOffset, readLength, data, offset);
+					if(tempVal == readLength){
+						readOffset = 0;
+						offset += val;
+						length -= val;
+					} else{
+						return tempVal;
+					}
+				} else {
+					return val;
+				}
 				currentPage++;
 			}
+			return val;
+		}
 			
 			// make an array of ppns in case the length of what we’re reading overflows to more than one page
-			int[] ppnArray = new int[numPages];
+		/*	int[] ppnArray = new int[numPages];
 			for (int i = 0; i < ppnArray.length; i++) {
 				ppnArray[i] = pageTable[startVPN+i].ppn;
 			}
@@ -195,7 +215,8 @@ public class UserProcess {
 			Lib.debug('c', "read this much from phys memory: "+val);
 			Lib.debug('c', "in buffer: " + new String(data));
 			return val;
-		} catch (Exception e) {
+		} */
+		catch (Exception e) {
 			Lib.debug('c', "exception in readVirtualMemory: " + e.getMessage());
 			return val;
 		}
@@ -236,26 +257,47 @@ public class UserProcess {
 		if(!validAddress(vaddr)){return 0;}
 		int val = 0;
 		try {
-			Lib.debug('c', "writing virtualMemory");
-			Lib.debug('c', "how much: "+length);
-			Lib.debug('c', "data we're writing: "+ new String(data));
-			// find vpn and the offset on the page we’re reading
+			Lib.debug('c', "reading virtualMemory");
+			Lib.debug('c', "reading length: "+length);
+
+			// find vpn, which will give us the ppn and the offset on the page we’re reading
 			int startVPN = Processor.pageFromAddress(vaddr);
 			int writeOffset = Processor.offsetFromAddress(vaddr);
-
+			
 			int newAddr = startVPN*pageSize;
-			int numPages = 0;
+			//int numPages = 0;
 			int currentPage = startVPN;
+			int tempVal = 0;
+			int writeLength = 0;
+			Lib.debug('c', "length: "+length);
+			Lib.debug('c', "pageSize: "+pageSize);
+			Lib.debug('c', "readOffset: "+readOffset);
 			while (newAddr < vaddr+length) {
-				numPages++;
+				//numPages++;
 				newAddr += pageSize;
 				pageTable[currentPage].used = true;
-				pageTable[currentPage].dirty = true;
+				writeLength = pageSize - writeOffset;
+				if(writeLength > length){
+					writeLength = length;
+				}
+				if(pageTable[currentPage].valid && !pageTable[currentPage].readOnly){
+					tempVal = ((UserKernel) Kernel.kernel).writePhysMem(pageTable[currentPage].ppn, writeOffset, writeLength, data, offset);
+					if(tempVal == writeLength){
+						writeOffset = 0;
+						offset += val;
+						length -= val;
+					} else{
+						return tempVal;
+					}
+				} else {
+					return val;
+				}
 				currentPage++;
 			}
+			return val;
 
 			// TODO: should we check if the page is read only before writing to it?
-			int[] ppnArray = new int[numPages];
+			/*int[] ppnArray = new int[numPages];
 			for (int i = 0; i < ppnArray.length; i++) {
 				ppnArray[i] = pageTable[startVPN+i].ppn;
 			}
@@ -264,7 +306,7 @@ public class UserProcess {
 			if (val < length) {
 				return -1;
 			}
-			return val;
+			return val;*/
 		} catch (Exception e) {
 			Lib.debug('c', "exception in writeVirtualMemory: "+e.getMessage());
 			return val;
