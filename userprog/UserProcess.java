@@ -236,23 +236,30 @@ public class UserProcess {
 		if(!validAddress(vaddr)){return 0;}
 		int val = 0;
 		try {
-			Lib.debug('c', "writing virtualMemory");
-			Lib.debug('c', "how much: "+length);
-			Lib.debug('c', "data we're writing: "+ new String(data));
-			// find vpn and the offset on the page we’re reading
-			int startVPN = Processor.pageFromAddress(vaddr);
-			int writeOffset = Processor.offsetFromAddress(vaddr);
+			Lib.debug('c', "reading virtualMemory");
+			Lib.debug('c', "reading length: "+length);
 
+			// find vpn, which will give us the ppn and the offset on the page we’re reading
+			int startVPN = Processor.pageFromAddress(vaddr);
+			int readOffset = Processor.offsetFromAddress(vaddr);
+			
 			int newAddr = startVPN*pageSize;
-			int numPages = 0;
+			//int numPages = 0;
 			int currentPage = startVPN;
+			Lib.debug('c', "length: "+length);
+			Lib.debug('c', "pageSize: "+pageSize);
+			Lib.debug('c', "readOffset: "+readOffset);
 			while (newAddr < vaddr+length) {
-				numPages++;
+				//numPages++;
 				newAddr += pageSize;
 				pageTable[currentPage].used = true;
-				pageTable[currentPage].dirty = true;
+				if(pageTable[currentPage].valid){
+					val += ((UserKernel) Kernel.kernel).readPhysMem(pageTable[currentPage].ppn, readOffset, length, data, offset);
+					length -= val;
+				}
 				currentPage++;
 			}
+			return val;
 
 			// TODO: should we check if the page is read only before writing to it?
 			int[] ppnArray = new int[numPages];
