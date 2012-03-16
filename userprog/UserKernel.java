@@ -29,9 +29,10 @@ public class UserKernel extends ThreadedKernel {
 				arr[i] = pageList.removeFirst();
 			}
 		} else {
-			lock.release();
-			int[] out = new int[0];
-			return out;
+			//lock.release();
+			//int[] out = new int[0];
+			arr = new int[0];
+			//return out;
 		}
 		lock.release();
 		return arr; 
@@ -55,6 +56,9 @@ public class UserKernel extends ThreadedKernel {
 			lock.acquire();
 			byte[] memory = Machine.processor().getMemory();
 			int start = ppn*pageSize + readOffset;
+			if (start > memory.length || start < 0) {
+				return amount;
+			}
 			int end = (ppn+1)*pageSize;
 			amount = end - start;
 			if(memory.length-start < length){
