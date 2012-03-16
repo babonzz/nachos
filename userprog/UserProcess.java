@@ -574,6 +574,7 @@ public class UserProcess {
 					argv[i] = str;
 				}
 				Lib.debug('e', "argv["+i+"]: "+ argv[i]);
+				str = null;
 				currentArg += argv[i].length() + 1; //1 from null terminator
 			}
 			Lib.debug('e', "After loop");
