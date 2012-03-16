@@ -204,7 +204,6 @@ public class UserProcess {
 				newAddr += pageSize;
 			}
 			Lib.debug('c', "pageTable.size: "+pageTable.length);
-			Lib.debug('c', "ppnArray.size: "+ppnArray.length);
 			Lib.debug('c', "read this much from phys memory: "+val);
 			Lib.debug('c', "in buffer: " + new String(data));
 			return val;
@@ -212,6 +211,7 @@ public class UserProcess {
 			
 			// make an array of ppns in case the length of what we’re reading overflows to more than one page
 		/*	int[] ppnArray = new int[numPages];
+			Lib.debug('c', "ppnArray.size: "+ppnArray.length);
 			for (int i = 0; i < ppnArray.length; i++) {
 				ppnArray[i] = pageTable[startVPN+i].ppn;
 			}
@@ -299,6 +299,7 @@ public class UserProcess {
 				currentPage++;
 				newAddr += pageSize;
 			}
+			Lib.debug('c', "Wrote this much to memory: "+ val);
 			return val;
 
 			// TODO: should we check if the page is read only before writing to it?
@@ -307,7 +308,6 @@ public class UserProcess {
 				ppnArray[i] = pageTable[startVPN+i].ppn;
 			}
 			val = ((UserKernel) Kernel.kernel).writePhysMem(ppnArray, writeOffset, length, data, offset);
-			Lib.debug('c', "Wrote this much to memory: "+ val);
 			if (val < length) {
 				return -1;
 			}
