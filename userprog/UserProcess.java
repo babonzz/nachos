@@ -163,8 +163,8 @@ public class UserProcess {
 		if (!validAddress(vaddr)){return 0;}
 		int val = 0;
 		try {
-			Lib.debug('c', "reading virtualMemory");
-			Lib.debug('c', "reading length: "+length);
+			Lib.debug('k', "reading virtualMemory");
+			Lib.debug('k', "reading length: "+length);
 
 			// find vpn, which will give us the ppn and the offset on the page we’re reading
 			int startVPN = Processor.pageFromAddress(vaddr);
@@ -175,9 +175,9 @@ public class UserProcess {
 			int currentPage = startVPN;
 			int tempVal = 0;
 			int readLength = 0;
-			Lib.debug('c', "length: "+length);
-			Lib.debug('c', "pageSize: "+pageSize);
-			Lib.debug('c', "readOffset: "+readOffset);
+			Lib.debug('k', "length: "+length);
+			Lib.debug('k', "pageSize: "+pageSize);
+			Lib.debug('k', "readOffset: "+readOffset);
 			while (newAddr < vaddr+length) {
 				//numPages++;
 				readLength = pageSize - readOffset;
@@ -203,6 +203,10 @@ public class UserProcess {
 				currentPage++;
 				newAddr += pageSize;
 			}
+			Lib.debug('c', "pageTable.size: "+pageTable.length);
+			Lib.debug('c', "ppnArray.size: "+ppnArray.length);
+			Lib.debug('c', "read this much from phys memory: "+val);
+			Lib.debug('c', "in buffer: " + new String(data));
 			return val;
 		}
 			
@@ -212,11 +216,7 @@ public class UserProcess {
 				ppnArray[i] = pageTable[startVPN+i].ppn;
 			}
 			Lib.debug('c', "numPages: "+numPages);
-			Lib.debug('c', "pageTable.size: "+pageTable.length);
-			Lib.debug('c', "ppnArray.size: "+ppnArray.length);
 			val = ((UserKernel) Kernel.kernel).readPhysMem(ppnArray, readOffset, length, data, offset);
-			Lib.debug('c', "read this much from phys memory: "+val);
-			Lib.debug('c', "in buffer: " + new String(data));
 			return val;
 		} */
 		catch (Exception e) {
@@ -260,8 +260,8 @@ public class UserProcess {
 		if(!validAddress(vaddr)){return 0;}
 		int val = 0;
 		try {
-			Lib.debug('c', "reading virtualMemory");
-			Lib.debug('c', "reading length: "+length);
+			Lib.debug('k', "reading virtualMemory");
+			Lib.debug('k', "reading length: "+length);
 
 			// find vpn, which will give us the ppn and the offset on the page we’re reading
 			int startVPN = Processor.pageFromAddress(vaddr);
@@ -272,9 +272,9 @@ public class UserProcess {
 			int currentPage = startVPN;
 			int tempVal = 0;
 			int writeLength = 0;
-			Lib.debug('c', "length: "+length);
-			Lib.debug('c', "pageSize: "+pageSize);
-			Lib.debug('c', "writeOffset: "+writeOffset);
+			Lib.debug('k', "length: "+length);
+			Lib.debug('k', "pageSize: "+pageSize);
+			Lib.debug('k', "writeOffset: "+writeOffset);
 			while (newAddr < vaddr+length) {
 				//numPages++;
 				writeLength = pageSize - writeOffset;

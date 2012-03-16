@@ -144,6 +144,7 @@ public class UserKernel extends ThreadedKernel {
 			} else {
 				System.arraycopy(data, readOffset, memory, start, amount);
 			}
+			Lib.debug('k', "wrote: " + amount);
 			return amount;
 		} catch(Exception e) {
 			Lib.debug('c', "writePhyMem had an exception: "+e.getMessage());
