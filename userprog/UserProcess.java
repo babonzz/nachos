@@ -180,8 +180,6 @@ public class UserProcess {
 			Lib.debug('c', "readOffset: "+readOffset);
 			while (newAddr < vaddr+length) {
 				//numPages++;
-				newAddr += pageSize;
-				pageTable[currentPage].used = true;
 				readLength = pageSize - readOffset;
 				if(readLength > length){
 					readLength = length;
@@ -189,16 +187,21 @@ public class UserProcess {
 				if(pageTable[currentPage].valid){
 					tempVal = ((UserKernel) Kernel.kernel).readPhysMem(pageTable[currentPage].ppn, readOffset, readLength, data, offset);
 					if(tempVal == readLength){
+						val += tempVal;
+						pageTable[currentPage].used = true;
 						readOffset = 0;
-						offset += val;
-						length -= val;
+						offset += tempVal;
+						length -= tempVal;
+						
 					} else{
 						return tempVal;
 					}
 				} else {
 					return val;
 				}
+				
 				currentPage++;
+				newAddr += pageSize;
 			}
 			return val;
 		}
@@ -271,11 +274,9 @@ public class UserProcess {
 			int writeLength = 0;
 			Lib.debug('c', "length: "+length);
 			Lib.debug('c', "pageSize: "+pageSize);
-			Lib.debug('c', "readOffset: "+readOffset);
+			Lib.debug('c', "writeOffset: "+writeOffset);
 			while (newAddr < vaddr+length) {
 				//numPages++;
-				newAddr += pageSize;
-				pageTable[currentPage].used = true;
 				writeLength = pageSize - writeOffset;
 				if(writeLength > length){
 					writeLength = length;
@@ -283,9 +284,12 @@ public class UserProcess {
 				if(pageTable[currentPage].valid && !pageTable[currentPage].readOnly){
 					tempVal = ((UserKernel) Kernel.kernel).writePhysMem(pageTable[currentPage].ppn, writeOffset, writeLength, data, offset);
 					if(tempVal == writeLength){
+						val += tempVal;
 						writeOffset = 0;
-						offset += val;
-						length -= val;
+						offset += tempVal;
+						length -= tempVal;
+						pageTable[currentPage].used = true;
+						pageTable[currentPage].dirty = true;
 					} else{
 						return tempVal;
 					}
@@ -293,6 +297,7 @@ public class UserProcess {
 					return val;
 				}
 				currentPage++;
+				newAddr += pageSize;
 			}
 			return val;
 
