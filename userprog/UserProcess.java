@@ -254,6 +254,7 @@ public class UserProcess {
 				currentPage++;
 			}
 
+			// TODO: should we check if the page is read only before writing to it?
 			int[] ppnArray = new int[numPages];
 			for (int i = 0; i < ppnArray.length; i++) {
 				ppnArray[i] = pageTable[startVPN+i].ppn;
@@ -263,7 +264,7 @@ public class UserProcess {
 			if (val < length) {
 				return -1;
 			}
-			return ((UserKernel) Kernel.kernel).writePhysMem(ppnArray, writeOffset, length, data, offset);
+			return val;
 		} catch (Exception e) {
 			Lib.debug('c', "exception in writeVirtualMemory: "+e.getMessage());
 			return val;
@@ -386,8 +387,11 @@ public class UserProcess {
 			return false;
 		}
 		pageTable = new TranslationEntry[numPages];
-		// TODO: check if the number of pages requested from getMemory is correct
 		int [] pages = ((UserKernel) Kernel.kernel).getMemory(numPages);
+		if (pages.length != numPages) {
+			((UserKernel) Kernel.kernel).freeMemory(pages);
+			return false;
+		}
 
 		for (int i = 0; i < pages.length; i++) {
 			pageTable[i] = new TranslationEntry(i, pages[i], true, false, false, false);
@@ -412,14 +416,6 @@ public class UserProcess {
 				if (section.isReadOnly()) {
 					pageEntry.readOnly = true;
 				}
-
-				//if (section.isReadOnly()) {
-				//pageTable[vpn] = new TranslationEntry (vpn, first, true, true, false, false);
-				//} else { 
-				//pageTable[vpn] = new TranslationEntry (vpn, first, true, false, false, false);
-				//}
-				// for now, just assume virtual addresses=physical addresses
-				//section.loadPage(i, vpn);
 			}
 		}
 
@@ -476,9 +472,6 @@ public class UserProcess {
 	 */
 	private int handleExit(int a0){
 		try {
-			//if (PID == 0) {
-			//return -1;
-			//}
 			Lib.debug('b', "calling exit: PID" + PID);
 			/*if (a0 == -1) {
 				parent.childIDsStatus.put(this.PID, a0); //a0 is status
